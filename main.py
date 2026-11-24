@@ -11,6 +11,7 @@ submitted silently.
 Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
     mkdir -p out && MAKEFUN_OUTPUT_DIR=out python3 main.py
 """
+import hashlib
 import os
 import struct
 import sys
@@ -57,6 +58,8 @@ def main():
     except (OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
+    with open(source, "rb") as handle:
+        digest = hashlib.sha256(handle.read()).hexdigest()[:12]
 
     os.makedirs(output_dir, exist_ok=True)
     # Write atomically: a temp file in the output dir, then rename, so the
@@ -79,7 +82,8 @@ def main():
             pass
         raise
 
-    print(f"wrote {target} ({width}x{height}, {size} bytes)")
+    print(f"wrote {target} ({width}x{height}, {size} bytes, "
+          f"sha256 {digest})")
     return 0
 
 
